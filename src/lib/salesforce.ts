@@ -32,6 +32,7 @@ export interface SalesforceOpportunity {
   Name: string;
   Amount: number;
   CloseDate: string;
+  StageName: string;
   Account: { Name: string };
   Owner: { Email: string; Name: string };
 }

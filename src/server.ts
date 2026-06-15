@@ -24,10 +24,16 @@ app.post('/webhook/opportunity-won', async (req: Request, res: Response) => {
     opportunityId: payload.opportunityId,
     opportunityName: payload.opportunityName,
     accountName: payload.accountName,
+    accountBillingCity: payload.accountBillingCity,
+    accountBillingState: payload.accountBillingState,
     amount: payload.amount,
     closeDate: payload.closeDate,
+    stageName: payload.stageName,
+    description: payload.description,
+    type: payload.type,
     ownerEmail: payload.ownerEmail,
     ownerName: payload.ownerName,
+    lineItems: payload.lineItems ?? [],
   };
 
   await opportunityQueue.add('process-opportunity', jobData, {

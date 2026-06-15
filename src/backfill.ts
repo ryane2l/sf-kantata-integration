@@ -20,8 +20,10 @@ async function run() {
       accountName: opp.Account?.Name ?? '',
       amount: opp.Amount,
       closeDate: opp.CloseDate,
+      stageName: opp.StageName,
       ownerEmail: opp.Owner?.Email ?? '',
       ownerName: opp.Owner?.Name ?? '',
+      lineItems: [],
     };
 
     try {
