@@ -14,10 +14,10 @@ export interface OpportunityPayload {
   opportunityId: string;
   opportunityName: string;
   accountName: string;
-  accountBillingCity?: string;
-  accountBillingState?: string;
   amount: number;
   closeDate: string;
+  startDate: string;
+  endDate: string;
   stageName: string;
   description?: string;
   type?: string;
@@ -30,10 +30,10 @@ export interface JobData {
   opportunityId: string;
   opportunityName: string;
   accountName: string;
-  accountBillingCity?: string;
-  accountBillingState?: string;
   amount: number;
   closeDate: string;
+  startDate: string;
+  endDate: string;
   stageName: string;
   description?: string;
   type?: string;

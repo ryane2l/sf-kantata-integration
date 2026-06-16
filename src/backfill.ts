@@ -20,6 +20,8 @@ async function run() {
       accountName: opp.Account?.Name ?? '',
       amount: opp.Amount,
       closeDate: opp.CloseDate,
+      startDate: opp.Start_Date__c ?? opp.CloseDate,
+      endDate: opp.End_Date__c ?? opp.CloseDate,
       stageName: opp.StageName,
       ownerEmail: opp.Owner?.Email ?? '',
       ownerName: opp.Owner?.Name ?? '',

@@ -1,8 +1,12 @@
-import { google } from 'googleapis';
+import { google, drive_v3 } from 'googleapis';
 import * as fs from 'fs';
 import 'dotenv/config';
 
-function buildDriveClient() {
+let _drive: drive_v3.Drive | null = null;
+
+function getDriveClient(): drive_v3.Drive {
+  if (_drive) return _drive;
+
   const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!keyFile) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not set');
 
@@ -11,10 +15,9 @@ function buildDriveClient() {
     credentials,
     scopes: ['https://www.googleapis.com/auth/drive'],
   });
-  return google.drive({ version: 'v3', auth });
+  _drive = google.drive({ version: 'v3', auth });
+  return _drive;
 }
-
-export const drive = buildDriveClient();
 
 export async function copyTemplateFolder(params: {
   name: string;
@@ -24,14 +27,14 @@ export async function copyTemplateFolder(params: {
   const { name, templateFolderId, parentFolderId } = params;
 
   // List all files/folders inside the template folder
-  const listRes = await drive.files.list({
+  const listRes = await getDriveClient().files.list({
     q: `'${templateFolderId}' in parents and trashed = false`,
     fields: 'files(id, name, mimeType)',
   });
   const templateChildren = listRes.data.files ?? [];
 
   // Create root folder
-  const rootRes = await drive.files.create({
+  const rootRes = await getDriveClient().files.create({
     requestBody: {
       name,
       mimeType: 'application/vnd.google-apps.folder',
@@ -54,7 +57,7 @@ export async function copyTemplateFolder(params: {
           parentFolderId: newFolderId,
         });
       } else {
-        await drive.files.copy({
+        await getDriveClient().files.copy({
           fileId: child.id,
           requestBody: { name: child.name ?? 'Untitled', parents: [newFolderId] },
           fields: 'id',
@@ -70,7 +73,7 @@ export async function shareFolderWithWriter(
   folderId: string,
   email: string
 ): Promise<void> {
-  await drive.permissions.create({
+  await getDriveClient().permissions.create({
     fileId: folderId,
     requestBody: {
       type: 'user',

@@ -26,12 +26,19 @@ export async function findWorkspaceByExternalReference(
   return workspaces.length > 0 ? workspaces[0] : null;
 }
 
-export async function createWorkspace(params: {
+export interface CreateWorkspaceParams {
   title: string;
   price: number;
   start_date: string;
+  due_date: string;
+  description?: string;
   external_reference: string;
-}): Promise<KantataWorkspace> {
+  custom_fields?: Record<string, string>;
+}
+
+export async function createWorkspace(
+  params: CreateWorkspaceParams
+): Promise<KantataWorkspace> {
   const res = await kantataClient.post<{ workspaces: KantataWorkspace[] }>(
     '/workspaces',
     { workspaces: [params] }
@@ -39,4 +46,13 @@ export async function createWorkspace(params: {
   const workspace = res.data.workspaces?.[0];
   if (!workspace) throw new Error('Kantata returned no workspace in response');
   return workspace;
+}
+
+export async function addParticipant(
+  workspaceId: string,
+  userId: string
+): Promise<void> {
+  await kantataClient.post(`/workspaces/${workspaceId}/workspace_members`, {
+    workspace_members: [{ user_id: userId, role: 'maven' }],
+  });
 }

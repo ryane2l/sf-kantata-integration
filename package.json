@@ -6,6 +6,10 @@
     "server": "ts-node src/server.ts",
     "worker": "ts-node src/worker.ts",
     "backfill": "ts-node src/backfill.ts",
+    "test:kantata": "ts-node src/test-kantata.ts",
+    "test:kantata-fields": "ts-node src/test-kantata-fields.ts",
+    "test:kantata-custom-fields": "ts-node src/test-kantata-custom-fields.ts",
+    "test:kantata-user": "ts-node src/test-kantata-user.ts",
     "build": "tsc",
     "start:server": "node dist/server.js",
     "start:worker": "node dist/worker.js"
