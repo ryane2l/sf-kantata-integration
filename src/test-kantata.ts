@@ -29,6 +29,6 @@ async function run() {
 }
 
 run().catch((err) => {
-  logger.error({ err: err.message }, 'Test failed');
+  logger.error({ err: err.message, response: err.response?.data }, 'Test failed');
   process.exit(1);
 });

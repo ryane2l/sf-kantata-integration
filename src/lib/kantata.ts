@@ -18,11 +18,11 @@ export interface KantataWorkspace {
 export async function findWorkspaceByExternalReference(
   ref: string
 ): Promise<KantataWorkspace | null> {
-  const res = await kantataClient.get<{ workspaces: KantataWorkspace[] }>(
+  const res = await kantataClient.get<{ workspaces: Record<string, KantataWorkspace> }>(
     '/workspaces',
     { params: { external_reference: ref } }
   );
-  const workspaces = res.data.workspaces ?? [];
+  const workspaces = Object.values(res.data.workspaces ?? {});
   return workspaces.length > 0 ? workspaces[0] : null;
 }
 
@@ -39,11 +39,11 @@ export interface CreateWorkspaceParams {
 export async function createWorkspace(
   params: CreateWorkspaceParams
 ): Promise<KantataWorkspace> {
-  const res = await kantataClient.post<{ workspaces: KantataWorkspace[] }>(
+  const res = await kantataClient.post<{ workspaces: Record<string, KantataWorkspace> }>(
     '/workspaces',
     { workspaces: [params] }
   );
-  const workspace = res.data.workspaces?.[0];
+  const workspace = Object.values(res.data.workspaces ?? {})[0];
   if (!workspace) throw new Error('Kantata returned no workspace in response');
   return workspace;
 }
