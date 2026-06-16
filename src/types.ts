@@ -20,6 +20,7 @@ export interface OpportunityPayload {
   endDate: string;
   stageName: string;
   description?: string;
+  billingAddress?: string;
   type?: string;
   ownerEmail: string;
   ownerName: string;
@@ -36,6 +37,7 @@ export interface JobData {
   endDate: string;
   stageName: string;
   description?: string;
+  billingAddress?: string;
   type?: string;
   ownerEmail: string;
   ownerName: string;

@@ -30,6 +30,7 @@ app.post('/webhook/opportunity-won', async (req: Request, res: Response) => {
     endDate: payload.endDate,
     stageName: payload.stageName,
     description: payload.description,
+    billingAddress: payload.billingAddress,
     type: payload.type,
     ownerEmail: payload.ownerEmail,
     ownerName: payload.ownerName,
