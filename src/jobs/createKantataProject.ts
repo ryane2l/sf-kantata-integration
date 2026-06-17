@@ -1,17 +1,28 @@
 import { Job } from 'bullmq';
 import { JobData } from '../types';
-import { createWorkspace } from '../lib/kantata';
+import { createWorkspace, findUserByEmail } from '../lib/kantata';
 import logger from '../logger';
 
 const IS_TEST = process.env.NODE_ENV !== 'production';
+const FALLBACK_KANTATA_USER_ID = '6397287'; // ryan@engage2learn.org
 
 export async function createKantataProject(job: Job<JobData>): Promise<void> {
-  const { opportunityId, opportunityName, accountName, amount, startDate, endDate, description } =
+  const { opportunityId, opportunityName, accountName, amount, startDate, endDate, description, ownerEmail } =
     job.data;
 
   logger.info({ opportunityId }, 'Step 1: createKantataProject starting');
 
   const title = IS_TEST ? `TEST - ${opportunityName}` : opportunityName;
+
+  const providerLeadId = await findUserByEmail(ownerEmail).catch(() => null)
+    ?? FALLBACK_KANTATA_USER_ID;
+
+  if (providerLeadId === FALLBACK_KANTATA_USER_ID) {
+    logger.warn(
+      { opportunityId, ownerEmail },
+      'Step 1: Could not find Kantata user for owner email, falling back to default user'
+    );
+  }
 
   const projectDescription = [
     description,
@@ -28,6 +39,7 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
       due_date: endDate,
       description: projectDescription || undefined,
       client_role_name: accountName,
+      primary_maven_id: providerLeadId,
       custom_fields: [
         { custom_field_id: '918965', value: opportunityId },
       ],

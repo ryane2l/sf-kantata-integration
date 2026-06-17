@@ -52,6 +52,7 @@ export interface CreateWorkspaceParams {
   due_date: string;
   description?: string;
   client_role_name?: string;
+  primary_maven_id?: string;
   custom_fields?: Array<{ custom_field_id: string; value: string }>;
 }
 
@@ -67,11 +68,13 @@ export async function createWorkspace(
   return workspace;
 }
 
-export async function addParticipant(
-  workspaceId: string,
-  userId: string
-): Promise<void> {
-  await kantataClient.post(`/workspaces/${workspaceId}/workspace_members`, {
-    workspace_members: [{ user_id: userId, role: 'maven' }],
-  });
+export async function findUserByEmail(email: string): Promise<string | null> {
+  const res = await kantataClient.get<{ users: Record<string, { id: string; email_address: string }> }>(
+    '/users',
+    { params: { search: email, per_page: 10 } }
+  );
+  const match = Object.values(res.data.users ?? {}).find(
+    (u) => u.email_address.toLowerCase() === email.toLowerCase()
+  );
+  return match?.id ?? null;
 }
