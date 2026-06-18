@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import { createKantataProject } from './jobs/createKantataProject';
+import { createKantataTasks } from './jobs/createKantataTasks';
 import logger from './logger';
 
 const mockJob: any = {
   data: {
-    opportunityId: '006Vy00001FIS9ZIAX-TEST2',
+    opportunityId: '006Vy00001FIS9ZIAX-TEST3',
     opportunityName: 'Elgin ISD | TX | LASO Cycle 4 LIFT | 26-27',
     accountName: 'Elgin Ind School District',
     billingAddress: '1002 North Avenue C, Elgin, Texas 78621, United States',
@@ -50,6 +51,7 @@ const mockJob: any = {
 async function run() {
   logger.info('Running Kantata project creation test...');
   await createKantataProject(mockJob);
+  await createKantataTasks(mockJob);
   logger.info({ kantataProjectId: mockJob.data.kantataProjectId }, 'Test complete');
 }
 

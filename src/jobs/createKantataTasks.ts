@@ -95,9 +95,10 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
         ? KANTATA_TAG_NAMES.PM
         : undefined;
 
-    for (let n = 1; n <= item.quantity; n++) {
+    const taskCount = Math.ceil(item.quantity);
+    for (let n = 1; n <= taskCount; n++) {
       const baseName = isOnsite ? `ONSITE: ${item.productName}` : item.productName;
-      const title = item.quantity > 1 ? `${baseName} ${n}` : baseName;
+      const title = taskCount > 1 ? `${baseName} ${n}` : baseName;
 
       const taskId = await createTask({
         workspace_id: kantataProjectId,
@@ -108,10 +109,11 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
         tag_list: tagList,
       });
 
-      if (isOnsite && coachResourceId) {
-        await assignTaskToResource(taskId, coachResourceId)
-          .catch((err) => logger.warn({ opportunityId, taskId, err: err.message }, 'Step 2: Could not assign Coach to task'));
-      }
+      // NOTE: story_assignments endpoint returns 404 on this Kantata account — pending Kantata support resolution
+      // if (isOnsite && coachResourceId) {
+      //   await assignTaskToResource(taskId, coachResourceId)
+      //     .catch((err) => logger.warn({ opportunityId, taskId, err: err.message }, 'Step 2: Could not assign Coach to task'));
+      // }
 
       tasksCreated++;
     }

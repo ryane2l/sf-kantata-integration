@@ -43,12 +43,11 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
     .join('\n\n');
 
   try {
+    // EDPS (930535), DSP (939359), and State (932555) are dropdown fields requiring choice IDs.
+    // Choice ID mapping is pending — will be added once resolved.
     const customFields: Array<{ custom_field_id: string; value: string }> = [
       { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.SALESFORCE_OPPORTUNITY_ID, value: opportunityId },
-      { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.EDPS, value: projectOwnerEmail },
-      { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.DSP, value: opOwnerEmail },
     ];
-    if (state) customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.STATE, value: state });
 
     const workspace = await createWorkspace({
       title,
