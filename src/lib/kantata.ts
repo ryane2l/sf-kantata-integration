@@ -68,6 +68,28 @@ export async function createWorkspace(
   return workspace;
 }
 
+export const KANTATA_ROLE_IDS = {
+  COACH: '1653501',
+} as const;
+
+export async function addUnnamedResource(
+  workspaceId: string,
+  roleId: string
+): Promise<string> {
+  const res = await kantataClient.post<{
+    workspace_resources: Record<string, { id: string; role_id: string }>;
+  }>('/workspace_resources', {
+    workspace_resource: {
+      workspace_id: parseInt(workspaceId, 10),
+      user_id: null,
+      role_id: parseInt(roleId, 10),
+    },
+  });
+  const resource = Object.values(res.data.workspace_resources ?? {})[0];
+  if (!resource) throw new Error('Kantata returned no workspace_resource in response');
+  return resource.id;
+}
+
 export async function findUserByEmail(email: string): Promise<string | null> {
   const res = await kantataClient.get<{ users: Record<string, { id: string; email_address: string }> }>(
     '/users',

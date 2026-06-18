@@ -1,6 +1,6 @@
 import { Job } from 'bullmq';
 import { JobData } from '../types';
-import { createWorkspace, findUserByEmail } from '../lib/kantata';
+import { createWorkspace, findUserByEmail, addUnnamedResource, KANTATA_ROLE_IDS } from '../lib/kantata';
 import logger from '../logger';
 
 const IS_TEST = process.env.NODE_ENV !== 'production';
@@ -44,6 +44,9 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
         { custom_field_id: '918965', value: opportunityId },
       ],
     });
+
+    await addUnnamedResource(workspace.id, KANTATA_ROLE_IDS.COACH);
+    logger.info({ opportunityId, kantataProjectId: workspace.id }, 'Step 1: Coach unnamed resource added');
 
     await job.updateData({ ...job.data, kantataProjectId: workspace.id });
     logger.info(
