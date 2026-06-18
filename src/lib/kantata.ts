@@ -80,8 +80,9 @@ export const KANTATA_CUSTOM_FIELD_IDS = {
   STATE: '932555',
 } as const;
 
-export const KANTATA_TAG_IDS = {
-  ONSITE: '9949',
+export const KANTATA_TAG_NAMES = {
+  ONSITE: 'Onsite',
+  PM: 'PM',
 } as const;
 
 export async function addUnnamedResource(

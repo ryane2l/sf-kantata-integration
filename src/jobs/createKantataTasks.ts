@@ -1,18 +1,32 @@
 import { Job } from 'bullmq';
 import { JobData, LineItem } from '../types';
-import { createTask, assignTaskToResource, KANTATA_TAG_IDS } from '../lib/kantata';
+import { createTask, assignTaskToResource, KANTATA_TAG_NAMES } from '../lib/kantata';
 import logger from '../logger';
 
 // Product codes whose tasks get 8hr estimate, Onsite tag, and Coach assignment.
-// Add to this list as confirmed by the team.
+// Pending confirmation: SD-BTW-01 (Board Training Workshop), EC-EET-01 (e2L Leader Training)
 const ONSITE_PRODUCT_CODES = new Set<string>([
-  // e.g. 'CA-CAC-01', 'EC-EET-01'
+  'CA-CAC-01', // e2L Coaching
+  'CA-CAT-01', // e2L Coaches Academy Training
+  'CA-TOT-01', // Trainer of Trainers
+  'CP-AIP-01', // Curriculum Implementation / e2L Enterprise Coaching
+  'CP-AIP-02', // e2L Coaching Package (per person add-on) - All In-Person
+  'TC-ETT-01', // e2L Training
+  'CC-OGT-02', // GroweLab Training Day (On-Site)
+  'SD-DDY-01', // Design Day
 ]);
 
 // Product codes to skip entirely (no tasks created).
 // Populate once confirmed.
 const SKIP_PRODUCT_CODES = new Set<string>([
   'OT-TRV-01', // Travel Reimbursements — cost absorbed into paired service item
+]);
+
+// Product codes whose tasks get the PM tag.
+const PM_PRODUCT_CODES = new Set<string>([
+  'PM-PMG-01',
+  'PM-PMG-40',
+  'PM-PMG-5',
 ]);
 
 interface ResolvedLineItem extends LineItem {
@@ -72,14 +86,18 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
 
   for (const item of resolvedItems) {
     const isOnsite = ONSITE_PRODUCT_CODES.has(item.productCode ?? '');
+    const isPM = PM_PRODUCT_CODES.has(item.productCode ?? '');
     const budgetPerTaskCents = Math.round((item.unitPrice + item.travelUnitPrice) * 100);
     const timeEstimateMinutes = isOnsite ? 480 : undefined; // 8 hours
-    const tagList = isOnsite ? KANTATA_TAG_IDS.ONSITE : undefined;
+    const tagList = isOnsite
+      ? KANTATA_TAG_NAMES.ONSITE
+      : isPM
+        ? KANTATA_TAG_NAMES.PM
+        : undefined;
 
     for (let n = 1; n <= item.quantity; n++) {
-      const title = item.quantity > 1
-        ? `${item.productName} ${n}`
-        : item.productName;
+      const baseName = isOnsite ? `ONSITE: ${item.productName}` : item.productName;
+      const title = item.quantity > 1 ? `${baseName} ${n}` : baseName;
 
       const taskId = await createTask({
         workspace_id: kantataProjectId,
