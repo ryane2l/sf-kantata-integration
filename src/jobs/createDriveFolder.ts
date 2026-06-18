@@ -4,7 +4,7 @@ import { copyTemplateFolder, shareFolderWithWriter } from '../lib/google';
 import logger from '../logger';
 
 export async function createDriveFolder(job: Job<JobData>): Promise<void> {
-  const { opportunityId, opportunityName, accountName, ownerEmail } = job.data;
+  const { opportunityId, opportunityName, accountName, projectOwnerEmail } = job.data;
 
   logger.info({ opportunityId }, 'Step 2: createDriveFolder starting');
 
@@ -23,7 +23,7 @@ export async function createDriveFolder(job: Job<JobData>): Promise<void> {
     parentFolderId,
   });
 
-  await shareFolderWithWriter(newFolderId, ownerEmail);
+  await shareFolderWithWriter(newFolderId, projectOwnerEmail);
 
   const driveFolderUrl = `https://drive.google.com/drive/folders/${newFolderId}`;
   await job.updateData({ ...job.data, driveFolderUrl });

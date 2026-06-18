@@ -7,19 +7,19 @@ const IS_TEST = process.env.NODE_ENV !== 'production';
 const FALLBACK_KANTATA_USER_ID = '6397287'; // ryan@engage2learn.org
 
 export async function createKantataProject(job: Job<JobData>): Promise<void> {
-  const { opportunityId, opportunityName, accountName, amount, startDate, endDate, description, ownerEmail } =
+  const { opportunityId, opportunityName, accountName, amount, startDate, endDate, description, projectOwnerEmail } =
     job.data;
 
   logger.info({ opportunityId }, 'Step 1: createKantataProject starting');
 
   const title = IS_TEST ? `TEST - ${opportunityName}` : opportunityName;
 
-  const providerLeadId = await findUserByEmail(ownerEmail).catch(() => null)
+  const providerLeadId = await findUserByEmail(projectOwnerEmail).catch(() => null)
     ?? FALLBACK_KANTATA_USER_ID;
 
   if (providerLeadId === FALLBACK_KANTATA_USER_ID) {
     logger.warn(
-      { opportunityId, ownerEmail },
+      { opportunityId, projectOwnerEmail },
       'Step 1: Could not find Kantata user for owner email, falling back to default user'
     );
   }

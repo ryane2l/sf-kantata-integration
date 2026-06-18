@@ -29,11 +29,14 @@ app.post('/webhook/opportunity-won', async (req: Request, res: Response) => {
     startDate: payload.startDate,
     endDate: payload.endDate,
     stageName: payload.stageName,
+    state: payload.state,
     description: payload.description,
     billingAddress: payload.billingAddress,
     type: payload.type,
-    ownerEmail: payload.ownerEmail,
-    ownerName: payload.ownerName,
+    projectOwnerEmail: payload.projectOwnerEmail,
+    projectOwnerName: payload.projectOwnerName,
+    opOwnerEmail: payload.opOwnerEmail,
+    opOwnerName: payload.opOwnerName,
     lineItems: payload.lineItems ?? [],
   };
 

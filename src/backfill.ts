@@ -23,8 +23,10 @@ async function run() {
       startDate: opp.Start_Date__c ?? opp.CloseDate,
       endDate: opp.End_Date__c ?? opp.CloseDate,
       stageName: opp.StageName,
-      ownerEmail: opp.Owner?.Email ?? '',
-      ownerName: opp.Owner?.Name ?? '',
+      projectOwnerEmail: opp.Owner?.Email ?? '',
+      projectOwnerName: opp.Owner?.Name ?? '',
+      opOwnerEmail: opp.Owner?.Email ?? '',
+      opOwnerName: opp.Owner?.Name ?? '',
       lineItems: [],
     };
 

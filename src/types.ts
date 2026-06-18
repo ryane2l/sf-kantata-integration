@@ -1,13 +1,12 @@
 export interface LineItem {
-  id: string;
+  productName: string;
+  productCode?: string;
+  productFamily?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
   description?: string;
   serviceDate?: string;
-  productName: string;
-  productCode?: string;
-  productFamily?: string;
 }
 
 export interface OpportunityPayload {
@@ -19,11 +18,14 @@ export interface OpportunityPayload {
   startDate: string;
   endDate: string;
   stageName: string;
+  state?: string;
   description?: string;
   billingAddress?: string;
   type?: string;
-  ownerEmail: string;
-  ownerName: string;
+  projectOwnerEmail: string;
+  projectOwnerName: string;
+  opOwnerEmail: string;
+  opOwnerName: string;
   lineItems?: LineItem[];
 }
 
@@ -36,11 +38,14 @@ export interface JobData {
   startDate: string;
   endDate: string;
   stageName: string;
+  state?: string;
   description?: string;
   billingAddress?: string;
   type?: string;
-  ownerEmail: string;
-  ownerName: string;
+  projectOwnerEmail: string;
+  projectOwnerName: string;
+  opOwnerEmail: string;
+  opOwnerName: string;
   lineItems?: LineItem[];
   kantataProjectId?: string;
   driveFolderUrl?: string;
