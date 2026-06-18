@@ -1,4 +1,5 @@
 export interface LineItem {
+  id: string;
   productName: string;
   productCode?: string;
   productFamily?: string;
@@ -48,5 +49,6 @@ export interface JobData {
   opOwnerName: string;
   lineItems?: LineItem[];
   kantataProjectId?: string;
+  coachResourceId?: string;
   driveFolderUrl?: string;
 }

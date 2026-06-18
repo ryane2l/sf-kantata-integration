@@ -3,6 +3,7 @@ import { Worker } from 'bullmq';
 import { connection } from './queue';
 import { JobData } from './types';
 import { createKantataProject } from './jobs/createKantataProject';
+import { createKantataTasks } from './jobs/createKantataTasks';
 import { createDriveFolder } from './jobs/createDriveFolder';
 import { writebackToSalesforce } from './jobs/writebackToSalesforce';
 import logger from './logger';
@@ -13,6 +14,7 @@ const worker = new Worker<JobData>(
     logger.info({ jobId: job.id, opportunityId: job.data.opportunityId }, 'Job started');
 
     await createKantataProject(job);
+    await createKantataTasks(job);
     await createDriveFolder(job);
     await writebackToSalesforce(job);
 
