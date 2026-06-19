@@ -7,13 +7,28 @@ import {
   addNamedMember,
   lookupEdpsChoiceId,
   lookupDspChoiceId,
+  lookupStateChoiceId,
   KANTATA_ROLE_IDS,
   KANTATA_CUSTOM_FIELD_IDS,
+  COMPANY_ENGAGE2LEARN_CHOICE_ID,
 } from '../lib/kantata';
+import { LineItem } from '../types';
 import logger from '../logger';
 
 const IS_TEST = process.env.NODE_ENV !== 'production';
 const FALLBACK_KANTATA_USER_ID = '6397287'; // ryan@engage2learn.org
+
+// Product codes counted toward Total Onsite Days — kept in sync with createKantataTasks.ts
+const ONSITE_PRODUCT_CODES = new Set([
+  'CA-CAC-01', 'CA-CAT-01', 'CA-TOT-01', 'CP-AIP-01', 'CP-AIP-02',
+  'TC-ETT-01', 'CC-OGT-02', 'SD-DDY-01', 'EC-EET-01',
+]);
+
+function calcTotalOnsiteDays(lineItems: LineItem[]): number {
+  return lineItems
+    .filter((li) => ONSITE_PRODUCT_CODES.has(li.productCode ?? ''))
+    .reduce((sum, li) => sum + Math.ceil(li.quantity), 0);
+}
 
 export async function createKantataProject(job: Job<JobData>): Promise<void> {
   const {
@@ -47,6 +62,7 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
   try {
     const customFields: Array<{ custom_field_id: string; value: unknown }> = [
       { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.SALESFORCE_OPPORTUNITY_ID, value: opportunityId },
+      { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.COMPANY_PROJECT, value: [COMPANY_ENGAGE2LEARN_CHOICE_ID] },
     ];
 
     const edpsId = lookupEdpsChoiceId(job.data.projectOwnerName);
@@ -61,6 +77,18 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
       customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.DSP, value: [dspId] });
     } else {
       logger.warn({ opportunityId, opOwnerName: job.data.opOwnerName }, 'Step 1: No DSP choice ID found for name — skipping DSP field');
+    }
+
+    const stateId = state ? lookupStateChoiceId(state) : null;
+    if (stateId) {
+      customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.STATE, value: [stateId] });
+    } else if (state) {
+      logger.warn({ opportunityId, state }, 'Step 1: No State choice ID found — skipping State field');
+    }
+
+    const totalOnsiteDays = calcTotalOnsiteDays(job.data.lineItems ?? []);
+    if (totalOnsiteDays > 0) {
+      customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.TOTAL_ONSITE_DAYS, value: totalOnsiteDays });
     }
 
     const workspace = await createWorkspace({

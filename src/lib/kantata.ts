@@ -78,15 +78,28 @@ export const KANTATA_CUSTOM_FIELD_IDS = {
   EDPS: '930535',
   DSP: '939359',
   STATE: '932555',
+  COMPANY_PROJECT: '904413',
+  TOTAL_ONSITE_DAYS: '939669',
 } as const;
 
-// Lookup tables: full name → active Kantata choice ID (array format required by API)
+// Company (Project) — active choice IDs: 4542878, 4542881
+// 4542878 = engage2learn (most common on existing projects)
+// 4542881 = unknown — confirm in Kantata Settings → Custom Fields
+export const COMPANY_ENGAGE2LEARN_CHOICE_ID = 4542878;
+
+// State field — 21 active choices (5131117–5131137)
+// Populate once user confirms order in Kantata Settings → Custom Fields → State
+const STATE_CHOICES: Record<string, number> = {
+  // 'Texas': 5131117,
+  // 'Georgia': 5131118,
+  // ... fill in from Kantata UI
+};
+
 // EDPS active choice IDs: 5118577, 5118578, 5203713, 5283129, 5283130, 5283131, 5283132
 // DSP  active choice IDs: 5283123, 5283124, 5283125, 5283126, 5283127, 5283128, 5298465
-// Populate once the user confirms name order in Kantata Settings → Custom Fields
+// Populate once user confirms name order in Kantata Settings → Custom Fields
 const EDPS_CHOICES: Record<string, number> = {
   // 'Diana Branch': 5118577,
-  // 'Ryan Pflughaupt': 5118578,
 };
 const DSP_CHOICES: Record<string, number> = {
   // 'Diana Branch': 5283123,
@@ -98,6 +111,10 @@ export function lookupEdpsChoiceId(name: string): number | null {
 
 export function lookupDspChoiceId(name: string): number | null {
   return DSP_CHOICES[name] ?? null;
+}
+
+export function lookupStateChoiceId(state: string): number | null {
+  return STATE_CHOICES[state] ?? null;
 }
 
 export const KANTATA_TAG_NAMES = {

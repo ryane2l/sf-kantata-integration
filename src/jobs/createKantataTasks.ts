@@ -14,6 +14,7 @@ const ONSITE_PRODUCT_CODES = new Set<string>([
   'TC-ETT-01', // e2L Training
   'CC-OGT-02', // GroweLab Training Day (On-Site)
   'SD-DDY-01', // Design Day
+  'EC-EET-01', // e2L Leader Training
 ]);
 
 // Product codes to skip entirely (no tasks created).
@@ -97,7 +98,8 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
 
     const taskCount = Math.ceil(item.quantity);
     for (let n = 1; n <= taskCount; n++) {
-      const baseName = isOnsite ? `ONSITE: ${item.productName}` : item.productName;
+      const cleanName = item.productName.replace(' (Gross)', '');
+      const baseName = isOnsite ? `ONSITE: ${cleanName}` : cleanName;
       const title = taskCount > 1 ? `${baseName} ${n}` : baseName;
 
       await createTask({
