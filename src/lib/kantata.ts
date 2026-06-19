@@ -83,9 +83,9 @@ export const KANTATA_CUSTOM_FIELD_IDS = {
 } as const;
 
 // Company (Project) — active choice IDs: 4542878, 4542881
-// 4542878 = engage2learn (most common on existing projects)
-// 4542881 = unknown — confirm in Kantata Settings → Custom Fields
-export const COMPANY_ENGAGE2LEARN_CHOICE_ID = 4542878;
+// 4542878 = Education Elements
+// 4542881 = engage2learn
+export const COMPANY_ENGAGE2LEARN_CHOICE_ID = 4542881;
 
 // State field — 21 active choices (5131117–5131137)
 // Populate once user confirms order in Kantata Settings → Custom Fields → State
