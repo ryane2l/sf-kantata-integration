@@ -82,27 +82,37 @@ export const KANTATA_CUSTOM_FIELD_IDS = {
   TOTAL_ONSITE_DAYS: '939669',
 } as const;
 
-// Company (Project) — active choice IDs: 4542878, 4542881
-// 4542878 = Education Elements
-// 4542881 = engage2learn
-export const COMPANY_ENGAGE2LEARN_CHOICE_ID = 4542881;
+// Company (Project) choices: 4542878=Education Elements, 4542879=PLC, 4542880=Tripod, 4542881=XanEdu, 5298687=engage2learn
+export const COMPANY_ENGAGE2LEARN_CHOICE_ID = 5298687;
 
-// State field — 21 active choices (5131117–5131137)
-// Populate once user confirms order in Kantata Settings → Custom Fields → State
+// State — all 50 states + DC + International
 const STATE_CHOICES: Record<string, number> = {
-  // 'Texas': 5131117,
-  // 'Georgia': 5131118,
-  // ... fill in from Kantata UI
+  'Alabama': 5131117, 'Alaska': 5131118, 'Arizona': 5131119, 'Arkansas': 5131120,
+  'California': 5131121, 'Colorado': 5131122, 'Connecticut': 5131123, 'Delaware': 5131124,
+  'Florida': 5131125, 'Georgia': 5131126, 'Hawaii': 5131127, 'Idaho': 5131128,
+  'Illinois': 5131129, 'Indiana': 5131130, 'Iowa': 5131131, 'Kansas': 5131132,
+  'Kentucky': 5131133, 'Louisiana': 5131134, 'Maine': 5131135, 'Maryland': 5131136,
+  'Massachusetts': 5131137, 'Michigan': 5131138, 'Minnesota': 5131139, 'Mississippi': 5131140,
+  'Missouri': 5131141, 'Montana': 5131142, 'Nebraska': 5131143, 'Nevada': 5131144,
+  'New Hampshire': 5131145, 'New Jersey': 5131146, 'New Mexico': 5131147, 'New York': 5131148,
+  'North Carolina': 5131149, 'North Dakota': 5131150, 'Ohio': 5131151, 'Oklahoma': 5131152,
+  'Oregon': 5131153, 'Pennsylvania': 5131154, 'Rhode Island': 5131155, 'South Carolina': 5131156,
+  'South Dakota': 5131157, 'Tennessee': 5131158, 'Texas': 5131159, 'Utah': 5131160,
+  'Vermont': 5131161, 'Virginia': 5131162, 'Washington': 5131163, 'West Virginia': 5131164,
+  'Wisconsin': 5131165, 'Wyoming': 5131166, 'International': 5131167, 'Washington, D.C.': 5152737,
 };
 
-// EDPS active choice IDs: 5118577, 5118578, 5203713, 5283129, 5283130, 5283131, 5283132
-// DSP  active choice IDs: 5283123, 5283124, 5283125, 5283126, 5283127, 5283128, 5298465
-// Populate once user confirms name order in Kantata Settings → Custom Fields
+// EDPS — currently first names only in Kantata; won't match Salesforce full names until
+// Kantata choices are updated to full names (e.g. "Jason" → "Jason Smith")
 const EDPS_CHOICES: Record<string, number> = {
-  // 'Diana Branch': 5118577,
+  'Jason': 5118577, 'Kelly': 5118578, 'Jill': 5203713,
+  'Jentessa': 5283129, 'Jordan': 5283130, 'Robyn': 5283131, 'Liz': 5283132,
 };
+
+// DSP — also first names only; update Kantata choices to full names for proper matching
 const DSP_CHOICES: Record<string, number> = {
-  // 'Diana Branch': 5283123,
+  'Jason': 5283123, 'Nick': 5283124, 'Sterling': 5283126,
+  'Ashley': 5283127, 'Emory': 5283128, 'Scott': 5298465,
 };
 
 export function lookupEdpsChoiceId(name: string): number | null {
