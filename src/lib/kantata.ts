@@ -53,7 +53,7 @@ export interface CreateWorkspaceParams {
   description?: string;
   client_role_name?: string;
   primary_maven_id?: string;
-  custom_fields?: Array<{ custom_field_id: string; value: string }>;
+  custom_fields?: Array<{ custom_field_id: string; value: unknown }>;
 }
 
 export async function createWorkspace(
@@ -79,6 +79,26 @@ export const KANTATA_CUSTOM_FIELD_IDS = {
   DSP: '939359',
   STATE: '932555',
 } as const;
+
+// Lookup tables: full name → active Kantata choice ID (array format required by API)
+// EDPS active choice IDs: 5118577, 5118578, 5203713, 5283129, 5283130, 5283131, 5283132
+// DSP  active choice IDs: 5283123, 5283124, 5283125, 5283126, 5283127, 5283128, 5298465
+// Populate once the user confirms name order in Kantata Settings → Custom Fields
+const EDPS_CHOICES: Record<string, number> = {
+  // 'Diana Branch': 5118577,
+  // 'Ryan Pflughaupt': 5118578,
+};
+const DSP_CHOICES: Record<string, number> = {
+  // 'Diana Branch': 5283123,
+};
+
+export function lookupEdpsChoiceId(name: string): number | null {
+  return EDPS_CHOICES[name] ?? null;
+}
+
+export function lookupDspChoiceId(name: string): number | null {
+  return DSP_CHOICES[name] ?? null;
+}
 
 export const KANTATA_TAG_NAMES = {
   ONSITE: 'Onsite',
@@ -125,11 +145,12 @@ export async function addNamedMember(
 export interface CreateTaskParams {
   workspace_id: string;
   title: string;
-  story_type: 'task';
+  story_type: 'deliverable' | 'task';
   budget_estimate_in_cents?: number;
   time_estimate_in_minutes?: number;
   tag_list?: string;
   parent_id?: string;
+  assignees?: Array<{ workspace_resource_id: number }>;
 }
 
 export async function createTask(params: CreateTaskParams): Promise<string> {
@@ -140,18 +161,6 @@ export async function createTask(params: CreateTaskParams): Promise<string> {
   const story = Object.values(res.data.stories ?? {})[0];
   if (!story) throw new Error('Kantata returned no story in response');
   return story.id;
-}
-
-export async function assignTaskToResource(
-  storyId: string,
-  workspaceResourceId: string
-): Promise<void> {
-  await kantataClient.post('/story_assignments', {
-    story_assignment: {
-      story_id: parseInt(storyId, 10),
-      workspace_resource_id: parseInt(workspaceResourceId, 10),
-    },
-  });
 }
 
 export async function findUserByEmail(email: string): Promise<string | null> {

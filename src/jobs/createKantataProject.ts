@@ -5,6 +5,8 @@ import {
   findUserByEmail,
   addUnnamedResource,
   addNamedMember,
+  lookupEdpsChoiceId,
+  lookupDspChoiceId,
   KANTATA_ROLE_IDS,
   KANTATA_CUSTOM_FIELD_IDS,
 } from '../lib/kantata';
@@ -43,11 +45,23 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
     .join('\n\n');
 
   try {
-    // EDPS (930535), DSP (939359), and State (932555) are dropdown fields requiring choice IDs.
-    // Choice ID mapping is pending — will be added once resolved.
-    const customFields: Array<{ custom_field_id: string; value: string }> = [
+    const customFields: Array<{ custom_field_id: string; value: unknown }> = [
       { custom_field_id: KANTATA_CUSTOM_FIELD_IDS.SALESFORCE_OPPORTUNITY_ID, value: opportunityId },
     ];
+
+    const edpsId = lookupEdpsChoiceId(job.data.projectOwnerName);
+    if (edpsId) {
+      customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.EDPS, value: [edpsId] });
+    } else {
+      logger.warn({ opportunityId, projectOwnerName: job.data.projectOwnerName }, 'Step 1: No EDPS choice ID found for name — skipping EDPS field');
+    }
+
+    const dspId = lookupDspChoiceId(job.data.opOwnerName);
+    if (dspId) {
+      customFields.push({ custom_field_id: KANTATA_CUSTOM_FIELD_IDS.DSP, value: [dspId] });
+    } else {
+      logger.warn({ opportunityId, opOwnerName: job.data.opOwnerName }, 'Step 1: No DSP choice ID found for name — skipping DSP field');
+    }
 
     const workspace = await createWorkspace({
       title,

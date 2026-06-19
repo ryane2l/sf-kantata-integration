@@ -1,6 +1,6 @@
 import { Job } from 'bullmq';
 import { JobData, LineItem } from '../types';
-import { createTask, assignTaskToResource, KANTATA_TAG_NAMES } from '../lib/kantata';
+import { createTask, KANTATA_TAG_NAMES } from '../lib/kantata';
 import logger from '../logger';
 
 // Product codes whose tasks get 8hr estimate, Onsite tag, and Coach assignment.
@@ -100,27 +100,24 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
       const baseName = isOnsite ? `ONSITE: ${item.productName}` : item.productName;
       const title = taskCount > 1 ? `${baseName} ${n}` : baseName;
 
-      const taskId = await createTask({
+      await createTask({
         workspace_id: kantataProjectId,
         title,
-        story_type: 'task',
+        story_type: 'deliverable',
         budget_estimate_in_cents: budgetPerTaskCents > 0 ? budgetPerTaskCents : undefined,
         time_estimate_in_minutes: timeEstimateMinutes,
         tag_list: tagList,
+        assignees: isOnsite && coachResourceId
+          ? [{ workspace_resource_id: parseInt(coachResourceId, 10) }]
+          : undefined,
       });
-
-      // NOTE: story_assignments endpoint returns 404 on this Kantata account — pending Kantata support resolution
-      // if (isOnsite && coachResourceId) {
-      //   await assignTaskToResource(taskId, coachResourceId)
-      //     .catch((err) => logger.warn({ opportunityId, taskId, err: err.message }, 'Step 2: Could not assign Coach to task'));
-      // }
 
       tasksCreated++;
     }
 
     logger.info(
-      { opportunityId, productCode: item.productCode, quantity: item.quantity, isOnsite },
-      `Step 2: Created ${item.quantity} task(s) for ${item.productName}`
+      { opportunityId, productCode: item.productCode, quantity: item.quantity, tasksCreatedForItem: taskCount, isOnsite },
+      `Step 2: Created ${taskCount} task(s) for ${item.productName}`
     );
   }
 
