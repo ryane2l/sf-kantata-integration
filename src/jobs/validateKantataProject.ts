@@ -16,11 +16,21 @@ const ONSITE_PRODUCT_CODES = new Set([
   'TC-ETT-01', 'CC-OGT-02', 'SD-DDY-01', 'EC-EET-01',
 ]);
 const SKIP_PRODUCT_CODES = new Set(['OT-TRV-01']);
+const PM_PRODUCT_CODES = new Set(['PM-PMG-01', 'PM-PMG-40', 'PM-PMG-5']);
 
 function expectedTaskCount(lineItems: LineItem[]): number {
-  return lineItems
-    .filter((li) => !SKIP_PRODUCT_CODES.has(li.productCode ?? ''))
-    .reduce((sum, li) => sum + Math.ceil(li.quantity), 0);
+  const seenPmCodes = new Set<string>();
+  let count = 0;
+  for (const li of lineItems) {
+    const code = li.productCode ?? '';
+    if (SKIP_PRODUCT_CODES.has(code)) continue;
+    if (PM_PRODUCT_CODES.has(code)) {
+      if (!seenPmCodes.has(code)) { seenPmCodes.add(code); count++; }
+    } else {
+      count += Math.ceil(li.quantity);
+    }
+  }
+  return count;
 }
 
 function expectedOnsiteDays(lineItems: LineItem[]): number {

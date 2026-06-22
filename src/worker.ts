@@ -25,15 +25,25 @@ const worker = new Worker<JobData>(
   { connection }
 );
 
-worker.on('failed', (job, err) => {
+worker.on('failed', (job, err: any) => {
   logger.error(
-    { jobId: job?.id, opportunityId: job?.data.opportunityId, err: err.message },
+    {
+      jobId: job?.id,
+      opportunityId: job?.data.opportunityId,
+      err: err.message,
+      stack: err.stack,
+      apiStatus: err.response?.status,
+      apiData: err.response?.data,
+    },
     'Job failed'
   );
 });
 
-worker.on('error', (err) => {
-  logger.error({ err: err.message }, 'Worker error');
+worker.on('error', (err: any) => {
+  logger.error(
+    { err: err.message, stack: err.stack, apiStatus: err.response?.status, apiData: err.response?.data },
+    'Worker error'
+  );
 });
 
 logger.info('Worker started, waiting for jobs...');

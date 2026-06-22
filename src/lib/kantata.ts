@@ -1,5 +1,6 @@
 import axios from 'axios';
 import 'dotenv/config';
+import logger from '../logger';
 
 const kantataClient = axios.create({
   baseURL: 'https://api.mavenlink.com/api/v1',
@@ -8,6 +9,19 @@ const kantataClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+kantataClient.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response) {
+      logger.error(
+        { url: err.config?.url, method: err.config?.method, status: err.response.status, data: err.response.data },
+        'Kantata API error'
+      );
+    }
+    return Promise.reject(err);
+  }
+);
 
 export interface KantataWorkspace {
   id: string;

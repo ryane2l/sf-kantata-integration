@@ -34,6 +34,36 @@ interface ResolvedLineItem extends LineItem {
   travelUnitPrice: number; // from paired travel line item, 0 if none
 }
 
+// Collapse multiple rows of the same PM product code into one entry with summed budget.
+// The consolidated task appears where the first occurrence was in the list.
+function consolidatePmItems(items: ResolvedLineItem[]): ResolvedLineItem[] {
+  const pmTotals = new Map<string, { index: number; item: ResolvedLineItem; totalCents: number }>();
+  const result: (ResolvedLineItem | null)[] = [];
+
+  for (const item of items) {
+    const code = item.productCode ?? '';
+    if (PM_PRODUCT_CODES.has(code)) {
+      const cents = Math.round((item.unitPrice + item.travelUnitPrice) * 100);
+      if (pmTotals.has(code)) {
+        pmTotals.get(code)!.totalCents += cents;
+      } else {
+        const index = result.length;
+        result.push(null); // placeholder at first-occurrence position
+        pmTotals.set(code, { index, item, totalCents: cents });
+      }
+    } else {
+      result.push(item);
+    }
+  }
+
+  // Fill placeholders with consolidated entries
+  for (const { index, item, totalCents } of pmTotals.values()) {
+    result[index] = { ...item, unitPrice: totalCents / 100, travelUnitPrice: 0, quantity: 1 };
+  }
+
+  return result.filter((x): x is ResolvedLineItem => x !== null);
+}
+
 function pairTravelItems(lineItems: LineItem[]): ResolvedLineItem[] {
   const resolved: ResolvedLineItem[] = [];
 
@@ -75,6 +105,11 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
     throw new Error('createKantataTasks: kantataProjectId missing — project must be created first');
   }
 
+  if (job.data.stepsCompleted?.kantataTasks) {
+    logger.info({ opportunityId, kantataProjectId }, 'Step 2: createKantataTasks already completed — skipping');
+    return;
+  }
+
   if (!lineItems || lineItems.length === 0) {
     logger.info({ opportunityId }, 'Step 2: No line items — skipping task creation');
     return;
@@ -82,7 +117,7 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
 
   logger.info({ opportunityId, kantataProjectId, itemCount: lineItems.length }, 'Step 2: createKantataTasks starting');
 
-  const resolvedItems = pairTravelItems(lineItems);
+  const resolvedItems = consolidatePmItems(pairTravelItems(lineItems));
   let tasksCreated = 0;
 
   for (const item of resolvedItems) {
@@ -123,5 +158,9 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
     );
   }
 
+  await job.updateData({
+    ...job.data,
+    stepsCompleted: { ...job.data.stepsCompleted, kantataTasks: true },
+  });
   logger.info({ opportunityId, kantataProjectId, tasksCreated }, 'Step 2: Task creation complete');
 }

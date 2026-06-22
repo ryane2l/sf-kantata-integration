@@ -37,6 +37,11 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
     description, billingAddress, projectOwnerEmail, opOwnerEmail, state,
   } = job.data;
 
+  if (job.data.stepsCompleted?.kantataProject) {
+    logger.info({ opportunityId, kantataProjectId: job.data.kantataProjectId }, 'Step 1: createKantataProject already completed — skipping');
+    return;
+  }
+
   logger.info({ opportunityId }, 'Step 1: createKantataProject starting');
 
   const title = IS_TEST ? `TEST - ${opportunityName}` : opportunityName;
@@ -117,7 +122,12 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
         .catch((err) => logger.warn({ opportunityId, err: err.message }, 'Step 1: Could not add DSP user — continuing'));
     }
 
-    await job.updateData({ ...job.data, kantataProjectId: workspace.id, coachResourceId });
+    await job.updateData({
+      ...job.data,
+      kantataProjectId: workspace.id,
+      coachResourceId,
+      stepsCompleted: { ...job.data.stepsCompleted, kantataProject: true },
+    });
     logger.info(
       { opportunityId, kantataProjectId: workspace.id },
       'Step 1: Kantata project created'
@@ -130,7 +140,11 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
       logger.info({ opportunityId }, 'Step 1: Duplicate SF ID — looking up existing project');
       const existing = await findWorkspaceBySalesforceId(opportunityId);
       if (existing) {
-        await job.updateData({ ...job.data, kantataProjectId: existing.id });
+        await job.updateData({
+          ...job.data,
+          kantataProjectId: existing.id,
+          stepsCompleted: { ...job.data.stepsCompleted, kantataProject: true },
+        });
         logger.info({ opportunityId, kantataProjectId: existing.id }, 'Step 1: Found existing project, resuming');
         return;
       }

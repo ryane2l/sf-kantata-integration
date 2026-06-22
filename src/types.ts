@@ -51,4 +51,9 @@ export interface JobData {
   kantataProjectId?: string;
   coachResourceId?: string;
   driveFolderUrl?: string;
+  stepsCompleted?: {
+    kantataProject?: boolean;
+    kantataTasks?: boolean;
+    driveFolder?: boolean;
+  };
 }
