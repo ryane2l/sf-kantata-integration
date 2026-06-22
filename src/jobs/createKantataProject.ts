@@ -2,6 +2,7 @@ import { Job } from 'bullmq';
 import { JobData } from '../types';
 import {
   createWorkspace,
+  findWorkspaceBySalesforceId,
   findUserByEmail,
   addUnnamedResource,
   addNamedMember,
@@ -99,6 +100,7 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
       description: projectDescription || undefined,
       client_role_name: accountName,
       primary_maven_id: resolvedProviderLeadId,
+      actual_fees_includes_additional_line_items: false,
       custom_fields: customFields,
     });
 
@@ -125,10 +127,14 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
       e.message?.includes('has already been entered')
     );
     if (isDuplicate) {
-      logger.info(
-        { opportunityId },
-        'Step 1: Kantata project already exists (duplicate SF ID), skipping'
-      );
+      logger.info({ opportunityId }, 'Step 1: Duplicate SF ID — looking up existing project');
+      const existing = await findWorkspaceBySalesforceId(opportunityId);
+      if (existing) {
+        await job.updateData({ ...job.data, kantataProjectId: existing.id });
+        logger.info({ opportunityId, kantataProjectId: existing.id }, 'Step 1: Found existing project, resuming');
+        return;
+      }
+      logger.warn({ opportunityId }, 'Step 1: Could not find existing project — tasks will be skipped');
       return;
     }
     throw err;

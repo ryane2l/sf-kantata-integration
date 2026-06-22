@@ -6,6 +6,7 @@ import { createKantataProject } from './jobs/createKantataProject';
 import { createKantataTasks } from './jobs/createKantataTasks';
 import { createDriveFolder } from './jobs/createDriveFolder';
 import { writebackToSalesforce } from './jobs/writebackToSalesforce';
+import { validateKantataProject } from './jobs/validateKantataProject';
 import logger from './logger';
 
 const worker = new Worker<JobData>(
@@ -15,6 +16,7 @@ const worker = new Worker<JobData>(
 
     await createKantataProject(job);
     await createKantataTasks(job);
+    await validateKantataProject(job);
     await createDriveFolder(job);
     await writebackToSalesforce(job);
 

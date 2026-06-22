@@ -54,6 +54,7 @@ export interface CreateWorkspaceParams {
   client_role_name?: string;
   primary_maven_id?: string;
   custom_fields?: Array<{ custom_field_id: string; value: unknown }>;
+  actual_fees_includes_additional_line_items?: boolean;
 }
 
 export async function createWorkspace(
@@ -102,17 +103,15 @@ const STATE_CHOICES: Record<string, number> = {
   'Wisconsin': 5131165, 'Wyoming': 5131166, 'International': 5131167, 'Washington, D.C.': 5152737,
 };
 
-// EDPS — currently first names only in Kantata; won't match Salesforce full names until
-// Kantata choices are updated to full names (e.g. "Jason" → "Jason Smith")
 const EDPS_CHOICES: Record<string, number> = {
-  'Jason': 5118577, 'Kelly': 5118578, 'Jill': 5203713,
-  'Jentessa': 5283129, 'Jordan': 5283130, 'Robyn': 5283131, 'Liz': 5283132,
+  'Jason Broussard': 5118577, 'Kelly Freiheit': 5118578, 'Jill Thompson': 5203713,
+  'Jentessa Williams': 5283129, 'Jordan Muse': 5283130, 'Robyn Scott': 5283131,
+  'Elizabeth Saenz': 5283132,
 };
 
-// DSP — also first names only; update Kantata choices to full names for proper matching
 const DSP_CHOICES: Record<string, number> = {
-  'Jason': 5283123, 'Nick': 5283124, 'Sterling': 5283126,
-  'Ashley': 5283127, 'Emory': 5283128, 'Scott': 5298465,
+  'Jason Broussard': 5283123, 'Nick Esposito': 5283124, 'Sterling Brown': 5283126,
+  'Ashley Guadarrama': 5283127, 'Emory Roethel': 5283128, 'Scott Hayes': 5298465,
 };
 
 export function lookupEdpsChoiceId(name: string): number | null {
@@ -199,4 +198,46 @@ export async function findUserByEmail(email: string): Promise<string | null> {
     (u) => u.email_address.toLowerCase() === email.toLowerCase()
   );
   return match?.id ?? null;
+}
+
+export interface WorkspaceDetail {
+  id: string;
+  title: string;
+  price_in_cents: number;
+  start_date: string;
+  due_date: string;
+  actual_fees_includes_additional_line_items: boolean;
+}
+
+export async function getWorkspace(workspaceId: string): Promise<WorkspaceDetail> {
+  const res = await kantataClient.get<{ workspaces: Record<string, WorkspaceDetail> }>(
+    `/workspaces/${workspaceId}`
+  );
+  const ws = Object.values(res.data.workspaces ?? {})[0];
+  if (!ws) throw new Error(`Kantata workspace ${workspaceId} not found`);
+  return ws;
+}
+
+export interface CustomFieldValue {
+  custom_field_id: string;
+  value: unknown;
+}
+
+export async function getWorkspaceCustomFieldValues(
+  workspaceId: string
+): Promise<CustomFieldValue[]> {
+  const res = await kantataClient.get<{
+    custom_field_values: Record<string, CustomFieldValue>;
+  }>(`/workspaces/${workspaceId}`, {
+    params: { include: 'custom_field_values' },
+  });
+  return Object.values(res.data.custom_field_values ?? {});
+}
+
+export async function getWorkspaceStoryCount(workspaceId: string): Promise<number> {
+  const res = await kantataClient.get<{ meta: { count: number } }>(
+    '/stories',
+    { params: { workspace_id: workspaceId, per_page: 1 } }
+  );
+  return res.data.meta?.count ?? 0;
 }
