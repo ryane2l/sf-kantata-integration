@@ -16,7 +16,6 @@ import {
 import { LineItem } from '../types';
 import logger from '../logger';
 
-const IS_TEST = process.env.NODE_ENV !== 'production';
 const FALLBACK_KANTATA_USER_ID = '6397287'; // ryan@engage2learn.org
 
 // Product codes counted toward Total Onsite Days — kept in sync with createKantataTasks.ts
@@ -44,7 +43,7 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
 
   logger.info({ opportunityId }, 'Step 1: createKantataProject starting');
 
-  const title = IS_TEST ? `TEST - ${opportunityName}` : opportunityName;
+  const title = opportunityName;
 
   const [providerLeadId, dspUserId] = await Promise.all([
     findUserByEmail(projectOwnerEmail).catch(() => null),
@@ -58,9 +57,11 @@ export async function createKantataProject(job: Job<JobData>): Promise<void> {
     logger.warn({ opportunityId, projectOwnerEmail }, 'Step 1: Could not find Kantata user for projectOwnerEmail, falling back to default');
   }
 
+  const cleanAddress = billingAddress?.replace(/<[^>]*>/g, '').trim();
+
   const projectDescription = [
     description,
-    billingAddress ? `Billing Address: ${billingAddress}` : null,
+    cleanAddress ? `Billing Address: ${cleanAddress}` : null,
   ]
     .filter(Boolean)
     .join('\n\n');

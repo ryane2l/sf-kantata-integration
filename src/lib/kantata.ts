@@ -32,24 +32,22 @@ export interface KantataWorkspace {
 export async function findWorkspaceBySalesforceId(
   opportunityId: string
 ): Promise<KantataWorkspace | null> {
-  // Search custom_field_values for subject_type=workspace matching our SF opportunity ID
-  const res = await kantataClient.get<{
-    custom_field_values: Record<string, {
-      subject_type: string;
-      subject_id: number;
-      custom_field_id: string;
-      value: unknown;
-    }>;
-  }>('/custom_field_values', {
-    params: {
-      subject_type: 'workspace',
-      per_page: 200,
-    },
-  });
+  // Paginate through all custom_field_values to find the one matching our SF opportunity ID
+  type CFV = { subject_type: string; subject_id: number; custom_field_id: string; value: unknown };
+  let page = 1;
+  let match: CFV | undefined;
 
-  const match = Object.values(res.data.custom_field_values ?? {}).find(
-    (cfv) => cfv.custom_field_id === '918965' && String(cfv.value) === opportunityId
-  );
+  while (!match) {
+    const res = await kantataClient.get<{ custom_field_values: Record<string, CFV>; meta: { count: number } }>(
+      '/custom_field_values',
+      { params: { subject_type: 'workspace', per_page: 200, page } }
+    );
+    const values = Object.values(res.data.custom_field_values ?? {});
+    match = values.find((cfv) => cfv.custom_field_id === '918965' && String(cfv.value) === opportunityId);
+    if (match) break;
+    if (values.length < 200) break; // no more pages
+    page++;
+  }
 
   if (!match) return null;
 
@@ -120,7 +118,7 @@ const STATE_CHOICES: Record<string, number> = {
 const EDPS_CHOICES: Record<string, number> = {
   'Jason Broussard': 5118577, 'Kelly Freiheit': 5118578, 'Jill Thompson': 5203713,
   'Jentessa Williams': 5283129, 'Jordan Muse': 5283130, 'Robyn Scott': 5283131,
-  'Elizabeth Saenz': 5283132,
+  'Elizabeth Saenz': 5283132, 'Mitzi Richardson': 5299477, 'Diana Branch': 5299478,
 };
 
 const DSP_CHOICES: Record<string, number> = {

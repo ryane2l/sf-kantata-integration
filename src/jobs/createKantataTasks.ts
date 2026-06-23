@@ -132,7 +132,9 @@ export async function createKantataTasks(job: Job<JobData>): Promise<void> {
         : undefined;
 
     const taskCount = Math.ceil(item.quantity);
-    for (let n = 1; n <= taskCount; n++) {
+    // Count down so task 1 is created last — Kantata orders by creation time
+    // (newest first), so counting down means task 1 appears at the top.
+    for (let n = taskCount; n >= 1; n--) {
       const cleanName = item.productName.replace(' (Gross)', '');
       const baseName = isOnsite ? `ONSITE: ${cleanName}` : cleanName;
       const title = taskCount > 1 ? `${baseName} ${n}` : baseName;
